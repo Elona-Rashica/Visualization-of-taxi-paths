@@ -6,7 +6,7 @@ var osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 });
 osm.addTo(map);
 
-// Dark map
+// Dark map - change
 var dark = L.tileLayer(
   "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}",
   {
