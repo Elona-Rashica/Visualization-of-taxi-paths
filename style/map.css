@@ -30,8 +30,30 @@
   z-index: 9999;
 }
 
+#uploadBttn, #graphBttn {
+  font-family: 'Times New Roman', Times, serif;
+}
+
 #uploadBttn:hover {
   background-color: var(--hover-color); /* Add a hover effect */
+}
+#graphBttn:hover {
+  background-color: var(--hover-color); /* Add a hover effect */
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.custom-file-upload {
+  border: 1px ;
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-family: 'Times New Roman', Times, serif;
+  background-color: #6C757D;
+  color: white;
+  cursor: pointer;
 }
 
 #chartPopup {
@@ -42,9 +64,16 @@
   transform: translate(-50%, -50%);
   width: 90%;
   max-width: 700px;
+  max-height: 70vh;
   background-color: white;
   padding: 20px;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   z-index: 999; /* Ensure the popup is on top of other elements */
+  position: relative;
+}
+#chartPopup button:last-child {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
 }

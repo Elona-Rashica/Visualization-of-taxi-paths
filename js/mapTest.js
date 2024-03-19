@@ -40,8 +40,6 @@ L.control
   .setPosition("bottomright")
   .addTo(map);
 
-
-
 // Function to generate an array of visually distinct RGB colors
 function generateRandomColors(quantity) {
   const randomColors = [];
@@ -97,7 +95,6 @@ function rgbToHex(rgb) {
     rgb.map((component) => component.toString(16).padStart(2, "0")).join("")
   );
 }
-  
 
 var everyNminutes = function (n) {
   var result = [];
@@ -122,55 +119,94 @@ var everyNminutes = function (n) {
   return result;
 };
 
-
 let timesArray = everyNminutes(15);
-let taxiCounts = Array(49).fill(0);
-// let myChart = new Chart("myChart", {
-//   type: "bar",
-//   data: {
-//     labels: timesArray,
-//     datasets: [
-//       {
-//         label: "Rush hours",
-//         data: taxiCounts,
-//         backgroundColor: "rgba(255,99,132, 0.2)",
-//         borderColor: "rgb(255, 99, 132)",
-//         borderWidth: 1,
-//       },
-//     ],
-//   },
-//   options: {
-//     scales: {
-//       y: {
-//         beginAtZero: true,
-//         stepSize: 1,
-//       },
-//     },
-//   },
-// });
-
-function updateChart(){   
+let myChart;
+async function updateChart() {
   const fileInput = document.getElementById("csvFileInput");
   const startDate = document.getElementById("chartStartDate").value;
   const endDate = document.getElementById("chartEndDate").value;
   const files = Array.from(fileInput.files); // Convert files to an array
 
- if (files.length === 0) {
+  if (files.length === 0) {
     alert("Please select at least one CSV file.");
     return;
   }
-  
+
+  let taxiCounts = Array(timesArray.length).fill(0); // Reset taxiCounts array for each file
+
+  await Promise.all(
+    files.map(async (file, index) => {
+      return new Promise(async (resolve) => {
+        try {
+          const results = await new Promise((resolve) => {
+            Papa.parse(file, {
+              complete: (results) => resolve(results),
+              header: true, // If the CSV has a header row
+            });
+          });
+
+          for (let i = 0; i < timesArray.length - 2; i++) {
+            const formattedStartDate = new Date(startDate.concat(" " + timesArray[i]));
+            const nextFormattedDate = new Date(startDate.concat(" " + timesArray[i + 1]));
+            const formattedEndDate = new Date (endDate.concat(" " + timesArray[i]));
+            
+            const rushHoursRows = results.data.filter((row) => {
+              const dateTimeParts = row.DeviceDateTime?.split(" ");
+              const dateCSV = new Date(dateTimeParts);
+              // const date = dateTimeParts?.[0];
+              // const hour = dateTimeParts?.[1];
+              return (
+                dateCSV >= formattedStartDate &&
+                dateCSV < nextFormattedDate &&
+                dateCSV <= formattedEndDate &&
+                row.Speed > 0 && 
+                row.Di1 == 1
+              );
+            });
+            if (rushHoursRows.length > 0) {
+              taxiCounts[i]++;
+            }
+          }
+          resolve();
+        } catch (error) {
+          console.error("Error processing file", file.name, error);
+          resolve(); // Resolve even if there's an error to continue with other files
+        }
+      });
+    })
+  );
 
 
-  // Update the chart data
-  myChart.data.datasets[0].data = taxiCounts;
-
-  // Update the chart labels if necessary
-  myChart.data.labels = timesArray;
-
-  // Update the chart
-  myChart.update();
+  if (myChart) {
+    myChart.destroy();
 }
+  // Create chart after processing all files
+   myChart = new Chart("myChart", {
+    type: "bar",
+    data: {
+      labels: timesArray,
+      datasets: [
+        {
+          label: "Rush hours",
+          data: taxiCounts,
+          backgroundColor: "rgba(255,99,132, 0.2)",
+          borderColor: "rgb(255, 99, 132)",
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          stepSize: 1,
+        },
+      },
+    },
+  });
+}
+
+
 
 function toggleChartPopup() {
   const chartPopup = document.getElementById("chartPopup");
@@ -222,6 +258,7 @@ async function handleFile() {
             });
           });
 
+
           //Filter csv rows based on date & time
           const csvRows = results.data.filter((row) => {
             var dateTime = row.DeviceDateTime.split(" ");
@@ -234,26 +271,6 @@ async function handleFile() {
               date <= endDate
             );
           });
-
-          for (let i = 0; i < timesArray.length; i++) {
-            const rushHoursRows = results.data.filter((row) => {
-              const dateTimeParts = row.DeviceDateTime?.split(" ");
-              const date = dateTimeParts?.[0];
-              const hour = dateTimeParts?.[1];
-              return (
-                hour >= timesArray[i] &&
-                hour < timesArray[i + 1] &&
-                row.Speed > 0 &&
-                row.Di1 == 1 &&
-                date <= startDate &&
-                date >= endDate
-              );
-            });
-
-            if (rushHoursRows.length > 0) {
-              taxiCounts[i]++;
-            }
-          }
           var taxiMeterON = 0;
           var flag = -1;
           let speed = 0;
@@ -295,33 +312,7 @@ async function handleFile() {
               }
             }
             flag = row.Di3;
-          }    
-          );
-
-          let myChart = new Chart("myChart", {
-            type: "bar",
-            data: {
-              labels: timesArray,
-              datasets: [
-                {
-                  label: "Rush hours",
-                  data: taxiCounts,
-                  backgroundColor: "rgba(255,99,132, 0.2)",
-                  borderColor: "rgb(255, 99, 132)",
-                  borderWidth: 1,
-                },
-              ],
-            },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  stepSize: 1,
-                },
-              },
-            },
           });
-          
 
           //Add the last sets of latlngs
           if (latlngs.length > 0) {
@@ -383,5 +374,4 @@ async function handleFile() {
       });
     })
   );
-  updateChart();
 }
