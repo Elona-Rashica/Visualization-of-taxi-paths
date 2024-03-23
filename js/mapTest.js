@@ -120,7 +120,31 @@ var everyNminutes = function (n) {
 };
 
 let timesArray = everyNminutes(15);
-let myChart;
+let taxiCounts = Array(timesArray.length).fill(0);
+let myChart = new Chart("myChart", {
+  type: "bar",
+  data: {
+    labels: timesArray,
+    datasets: [
+      {
+        label: "Rush hours",
+        data: taxiCounts,
+        backgroundColor: "rgba(255,99,132, 0.2)",
+        borderColor: "rgb(255, 99, 132)",
+        borderWidth: 1,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true,
+        stepSize: 1,
+      },
+    },
+  },
+});
+;
 async function updateChart() {
   const fileInput = document.getElementById("csvFileInput");
   const startDate = document.getElementById("chartStartDate").value;
@@ -131,8 +155,6 @@ async function updateChart() {
     alert("Please select at least one CSV file.");
     return;
   }
-
-  let taxiCounts = Array(timesArray.length).fill(0); // Reset taxiCounts array for each file
 
   await Promise.all(
     files.map(async (file, index) => {
@@ -145,25 +167,40 @@ async function updateChart() {
             });
           });
 
+          //nashta o mire niher mi filtru veq mes qatyne datave tani mi filtru qashtu me ore qe mos me shku per cdo 15 min me foreach
+          
+          //keq o nese e bon ma shume se 2 dite...se gjith formatted start date e kena veq diten qe e jep perdorusesi 
           for (let i = 0; i < timesArray.length - 2; i++) {
-            const formattedStartDate = new Date(startDate.concat(" " + timesArray[i]));
-            const nextFormattedDate = new Date(startDate.concat(" " + timesArray[i + 1]));
-            const formattedEndDate = new Date (endDate.concat(" " + timesArray[i]));
-            
-            const rushHoursRows = results.data.filter((row) => {
-              const dateTimeParts = row.DeviceDateTime?.split(" ");
-              const dateCSV = new Date(dateTimeParts);
-              // const date = dateTimeParts?.[0];
-              // const hour = dateTimeParts?.[1];
-              return (
+            const formattedStartDate = new Date(
+              startDate.concat(" " + timesArray[i])
+            );
+            const nextFormattedDate = new Date(
+              startDate.concat(" " + timesArray[i + 1])
+            );
+            const formattedEndDate = new Date(
+              endDate.concat(" " + timesArray[i])
+            );
+            let rowFound = false;
+            results.data.forEach((row) => {
+              const dateCSV = new Date(row.DeviceDateTime);
+
+               
+              if (
                 dateCSV >= formattedStartDate &&
+                // dateCSV.getHours() == formattedStartDate.getHours() &&
+                // //dateCSV.getHours() < nextFormattedDate.getHours() &&
                 dateCSV < nextFormattedDate &&
                 dateCSV <= formattedEndDate &&
-                row.Speed > 0 && 
+                row.Speed > 0 &&
                 row.Di1 == 1
-              );
+              ) {
+                rowFound = true;
+                return;
+              }
+              return rowFound;
+
             });
-            if (rushHoursRows.length > 0) {
+            if (rowFound) {
               taxiCounts[i]++;
             }
           }
@@ -176,12 +213,11 @@ async function updateChart() {
     })
   );
 
-
   if (myChart) {
     myChart.destroy();
-}
+  }
   // Create chart after processing all files
-   myChart = new Chart("myChart", {
+  myChart = new Chart("myChart", {
     type: "bar",
     data: {
       labels: timesArray,
@@ -205,8 +241,6 @@ async function updateChart() {
     },
   });
 }
-
-
 
 function toggleChartPopup() {
   const chartPopup = document.getElementById("chartPopup");
@@ -239,6 +273,9 @@ async function handleFile() {
     return;
   }
 
+  const formattedStartDate = new Date(startDate.concat(" ", startTime));
+  const formattedEndDate = new Date(endDate.concat(" ", endTime));
+
   // Clear previous polylines and update markers
   map.eachLayer(function (layer) {
     if (layer instanceof L.Polyline) {
@@ -258,17 +295,17 @@ async function handleFile() {
             });
           });
 
-
           //Filter csv rows based on date & time
           const csvRows = results.data.filter((row) => {
-            var dateTime = row.DeviceDateTime.split(" ");
-            var date = dateTime[0];
-            var time = dateTime[1];
+
+            var CSVdate = new Date(row.DeviceDateTime);
             return (
-              time >= startTime &&
-              time <= endTime &&
-              date >= startDate &&
-              date <= endDate
+              CSVdate.getDate() >= formattedStartDate.getDate() &&
+              CSVdate.getDate() <= formattedEndDate.getDate() &&
+              CSVdate.getHours() >= formattedStartDate.getHours() &&
+              CSVdate.getHours() <= formattedEndDate.getHours()
+              //CSVdate.getMinutes() >= formattedStartDate.getMinutes() &&
+              //CSVdate.getMinutes() <= formattedEndDate.getMinutes()
             );
           });
           var taxiMeterON = 0;
@@ -284,89 +321,98 @@ async function handleFile() {
           let latlngsDashed = [];
 
           csvRows.forEach(function (row) {
-            if (parseInt(row.Speed) > 0) {
-              speed = speed + parseInt(row.Speed);
-              numRows++;
-            }
-
-            if (row.Di3 == 1) {
-              if (flag == 1) {
-                latlngs.push([row.Latitude, row.Longitute]);
-              } else {
-                if (latlngs.length > 0) {
-                  taxiMeterON++;
-                  latlngsFinal.push(latlngs);
-                  latlngs.length = 0;
-                }
-                latlngs.push([row.Latitude, row.Longitute]);
-              }
-            } else {
-              if (flag == 0) {
-                latlngsDashed.push([row.Latitude, row.Longitute]);
-              } else {
-                if (latlngsDashed.length > 0) {
-                  latlngsDashedFinal.push(latlngsDashed);
-                  latlngsDashed.length = 0;
-                }
-                latlngsDashed.push([row.Latitude, row.Longitute]);
-              }
-            }
-            flag = row.Di3;
+            console.log(row.DeviceDateTime);
+            latlngs.push([row.Latitude, row.Longitute]);
           });
 
-          //Add the last sets of latlngs
-          if (latlngs.length > 0) {
-            taxiMeterON++;
-          }
-          avgSpeed = speed / numRows;
-
-          latlngsFinal.push(latlngs);
-          latlngsDashedFinal.push(latlngsDashed);
-          console.log(index);
-          // Add polylines from latlngs array
-          let polyline = L.polyline(latlngsFinal, {
+          let polyline = L.polyline(latlngs, {
             color: arrayOfRandomColors[index % arrayOfRandomColors.length],
           }).addTo(map);
 
-          let dashedPolyline = L.polyline(latlngsDashedFinal, {
-            color: arrayOfRandomColors[index % arrayOfRandomColors.length],
-            dashArray: "5, 5",
-          }).addTo(map);
+          // csvRows.forEach(function (row) {
+          //   if (parseInt(row.Speed) > 0) {
+          //     speed = speed + parseInt(row.Speed);
+          //     numRows++;
+          //   }
 
-          polyline.on("click", function (event) {
-            let clickedLatLng = event.latlng;
+          //   if (row.Di3 == 1) {
+          //     if (flag == 1) {
+          //       latlngs.push([row.Latitude, row.Longitute]);
+          //     } else {
+          //       if (latlngs.length > 0) {
+          //         taxiMeterON++;
+          //         latlngsFinal.push(latlngs);
+          //         latlngs.length = 0;
+          //       }
+          //       latlngs.push([row.Latitude, row.Longitute]);
+          //     }
+          //   } else {
+          //     if (flag == 0) {
+          //       latlngsDashed.push([row.Latitude, row.Longitute]);
+          //     } else {
+          //       if (latlngsDashed.length > 0) {
+          //         latlngsDashedFinal.push(latlngsDashed);
+          //         latlngsDashed.length = 0;
+          //       }
+          //       latlngsDashed.push([row.Latitude, row.Longitute]);
+          //     }
+          //   }
+          //   flag = row.Di3;
+          // });
 
-            // Create a popup and open it at the clicked coordinates
-            L.popup()
-              .setLatLng(clickedLatLng)
-              .setContent(
-                "The taxi meter was on " +
-                  taxiMeterON +
-                  " times and the average speed was " +
-                  avgSpeed.toFixed(2) +
-                  "!"
-              )
-              .openOn(map);
-          });
+          // //Add the last sets of latlngs
+          // if (latlngs.length > 0) {
+          //   taxiMeterON++;
+          // }
+          // avgSpeed = speed / numRows;
 
-          dashedPolyline.on("click", function (event) {
-            // Get the coordinates where the click occurred
-            let clickedLatLng = event.latlng;
+          // latlngsFinal.push(latlngs);
+          // latlngsDashedFinal.push(latlngsDashed);
+          // console.log(index);
+          // // Add polylines from latlngs array
+          // let polyline = L.polyline(latlngsFinal, {
+          //   color: arrayOfRandomColors[index % arrayOfRandomColors.length],
+          // }).addTo(map);
 
-            // Create a popup and open it at the clicked coordinates
-            L.popup()
-              .setLatLng(clickedLatLng)
-              .setContent(
-                "The taxi meter was on " +
-                  taxiMeterON +
-                  " times and the average speed was " +
-                  avgSpeed.toFixed(2) +
-                  "!"
-              )
-              .openOn(map);
+          // let dashedPolyline = L.polyline(latlngsDashedFinal, {
+          //   color: arrayOfRandomColors[index % arrayOfRandomColors.length],
+          //   dashArray: "5, 5",
+          // }).addTo(map);
 
-            resolve();
-          });
+          // polyline.on("click", function (event) {
+          //   let clickedLatLng = event.latlng;
+
+          //   // Create a popup and open it at the clicked coordinates
+          //   L.popup()
+          //     .setLatLng(clickedLatLng)
+          //     .setContent(
+          //       "The taxi meter was on " +
+          //         taxiMeterON +
+          //         " times and the average speed was " +
+          //         avgSpeed.toFixed(2) +
+          //         "!"
+          //     )
+          //     .openOn(map);
+          // });
+
+          // dashedPolyline.on("click", function (event) {
+          //   // Get the coordinates where the click occurred
+          //   let clickedLatLng = event.latlng;
+
+          //   // Create a popup and open it at the clicked coordinates
+          //   L.popup()
+          //     .setLatLng(clickedLatLng)
+          //     .setContent(
+          //       "The taxi meter was on " +
+          //         taxiMeterON +
+          //         " times and the average speed was " +
+          //         avgSpeed.toFixed(2) +
+          //         "!"
+          //     )
+          //     .openOn(map);
+          // });
+
+          resolve();
         } catch (error) {
           console.error("Error processing file", file.name, error);
           resolve(); // Resolve even if there's an error to continue with other files
