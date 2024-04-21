@@ -144,18 +144,34 @@ let myChart = new Chart("myChart", {
     },
   },
 });
-;
 async function updateChart() {
   const fileInput = document.getElementById("csvFileInput");
-  const startDate = document.getElementById("chartStartDate").value;
-  const endDate = document.getElementById("chartEndDate").value;
+  var startDate = document.getElementById("chartStartDate").value;
+  var endDate = document.getElementById("chartEndDate").value;
   const files = Array.from(fileInput.files); // Convert files to an array
 
+  if (startDate === "" && endDate === "") {
+    startDate = document.getElementById("startDate").value;
+    endDate = document.getElementById("endDate").value;
+  }
+
+  if (
+    (startDate !== "" && endDate === "") ||
+    (startDate === "" && endDate !== "")
+  ) {
+    alert("Please provide both dates!");
+    return;
+  }
+
+  console.log(startDate + "" + endDate);
+  console.log("clicked");
+  var onlyStartDate = new Date(startDate);
+  var onlyEndDate = new Date(endDate);
   if (files.length === 0) {
     alert("Please select at least one CSV file.");
     return;
   }
-
+  taxiCounts.fill(0, 0, taxiCounts.length - 1);
   await Promise.all(
     files.map(async (file, index) => {
       return new Promise(async (resolve) => {
@@ -167,9 +183,15 @@ async function updateChart() {
             });
           });
 
-          //nashta o mire niher mi filtru veq mes qatyne datave tani mi filtru qashtu me ore qe mos me shku per cdo 15 min me foreach
-          
-          //keq o nese e bon ma shume se 2 dite...se gjith formatted start date e kena veq diten qe e jep perdorusesi 
+          //first filter only selected dates
+          const csvRows = results.data.filter((row) => {
+            var CSVdate = new Date(row.DeviceDateTime);
+            return CSVdate >= onlyStartDate && CSVdate <= onlyEndDate;
+          });
+
+          let datesDifference = onlyEndDate.getTime() - onlyStartDate.getTime();
+
+          let numOfDaysBetween = Math.floor(datesDifference / 86400000);
           for (let i = 0; i < timesArray.length - 2; i++) {
             const formattedStartDate = new Date(
               startDate.concat(" " + timesArray[i])
@@ -177,32 +199,39 @@ async function updateChart() {
             const nextFormattedDate = new Date(
               startDate.concat(" " + timesArray[i + 1])
             );
-            const formattedEndDate = new Date(
-              endDate.concat(" " + timesArray[i])
-            );
+
+
             let rowFound = false;
-            results.data.forEach((row) => {
-              const dateCSV = new Date(row.DeviceDateTime);
 
-               
-              if (
-                dateCSV >= formattedStartDate &&
-                // dateCSV.getHours() == formattedStartDate.getHours() &&
-                // //dateCSV.getHours() < nextFormattedDate.getHours() &&
-                dateCSV < nextFormattedDate &&
-                dateCSV <= formattedEndDate &&
-                row.Speed > 0 &&
-                row.Di1 == 1
-              ) {
-                rowFound = true;
-                return;
+
+            let k = 0;
+            do {
+              csvRows.forEach((row) => {
+                const dateCSV = new Date(row.DeviceDateTime);
+
+                if (
+                  ((formattedStartDate.getHours() == dateCSV.getHours() &&
+                    formattedStartDate.getMinutes() <= dateCSV.getMinutes() &&
+                    nextFormattedDate.getMinutes() > dateCSV.getMinutes()) ||
+                    (dateCSV.getMinutes() > 45 &&
+                      formattedStartDate.getHours() == dateCSV.getHours())) &&
+                  row.Speed > 0 &&
+                  row.Di1 == 1
+                ) {
+                  rowFound = true;
+                  return;
+                }
+                return rowFound;
+              });
+              if (rowFound) {
+                taxiCounts[i]++;
               }
-              return rowFound;
-
-            });
-            if (rowFound) {
-              taxiCounts[i]++;
-            }
+              rowFound = false;
+              //console.log("inside for loop" + formattedStartDate);
+              formattedStartDate.setDate(formattedStartDate.getDate() + 1);
+              nextFormattedDate.setDate(nextFormattedDate.getDate() + 1);
+              k++;
+            } while (k <= numOfDaysBetween);
           }
           resolve();
         } catch (error) {
@@ -212,6 +241,8 @@ async function updateChart() {
       });
     })
   );
+
+  console.log("Done");
 
   if (myChart) {
     myChart.destroy();
@@ -295,15 +326,17 @@ async function handleFile() {
             });
           });
 
+          //kqyr mi filtru edhe ne baze te di3 krejt rreshtat ni ven edhe krejt rershtat me !di3 ni ven tjeter qe mi shti krejt me ni array tani veq me i bo ne latlngs e me dal mire
+           
+
           //Filter csv rows based on date & time
           const csvRows = results.data.filter((row) => {
-
             var CSVdate = new Date(row.DeviceDateTime);
             return (
               CSVdate.getDate() >= formattedStartDate.getDate() &&
               CSVdate.getDate() <= formattedEndDate.getDate() &&
               CSVdate.getHours() >= formattedStartDate.getHours() &&
-              CSVdate.getHours() <= formattedEndDate.getHours()
+              CSVdate.getHours() < formattedEndDate.getHours()
               //CSVdate.getMinutes() >= formattedStartDate.getMinutes() &&
               //CSVdate.getMinutes() <= formattedEndDate.getMinutes()
             );
@@ -321,7 +354,7 @@ async function handleFile() {
           let latlngsDashed = [];
 
           csvRows.forEach(function (row) {
-            console.log(row.DeviceDateTime);
+            //console.log(row.DeviceDateTime);
             latlngs.push([row.Latitude, row.Longitute]);
           });
 
