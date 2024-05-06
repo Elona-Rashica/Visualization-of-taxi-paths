@@ -24,6 +24,7 @@
       <input id="endTime" type="time" />
       <button id="uploadBttn" class="btn btn-secondary" onclick="handleFile()">Visuzalize</button> 
       <button id="graphBttn"  class="btn btn-secondary" onclick="toggleChartPopup()">See graph</button> 
+      <button id="helpBttn"  class="btn btn-secondary" onclick="toggleHelpPopup()">Help</button> 
     </div>
     <div id="map">
       <div id="chartPopup">
@@ -33,7 +34,49 @@
         <canvas id="myChart" style="width:100%;max-width:100%;"></canvas>
         <button class="btn btn-secondary btn-sm" onclick="toggleChartPopup()">Close Chart</button>
       </div>
-    </div>
+
+      <div id="helpPopup">
+        <div>
+          <div style="position: relative; display: flex; justify-content: center; align-items: center;">
+            <img src="/img/universityLogo.png" style="position: absolute; top: 0; right: 0; width: 80px; height: 70px;" alt="">  
+            <h3>Help</h3>
+          </div>
+          <br>
+          <br>
+          <p>
+            Welcome to Visualization of Taxi Paths website. Main functionalities are 
+            visualizing taxi paths and generating a graph with the number of taxis for every 
+            15 minutes, for the selected dates.
+          </p>
+          <div style="display: flex; align-items: center;">
+            <p style="font-size: 11px;">
+              Elona Rashica <br>
+              <i>Visualization of Taxi Paths</i> <br>
+              University of Pristina, 2024<br>
+              Bachelor Thesis, Computer Engineering
+            </p>
+          </div>
+          <h5> Instructions for taxi paths visualization</h5>
+          <ol>
+            <li>Upload CSV files with taxi data</li>
+            <li>Select dates and times for which you want to filter data</li>
+            <li>Select 'Visualize'</li>
+          </ol>
+      
+          <h5>Instructions for the graph</h5>
+          <ol>
+            <li>Select 'See graph'</li>
+            <li>Select dates or leave the default dates</li>
+            <li>Select 'See graph'</li>
+          </ol>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="toggleHelpPopup()">Close</button>
+      </div>
+      
+      
+
+
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js">// per parse </script>
     <script src="js/mapTest.js"></script>

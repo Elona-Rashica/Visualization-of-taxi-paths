@@ -275,9 +275,24 @@ async function updateChart() {
 
 function toggleChartPopup() {
   const chartPopup = document.getElementById("chartPopup");
+  const helpPopup = document.getElementById("helpPopup");
+
+  helpPopup.style.display = "none"
 
   chartPopup.style.display =
     chartPopup.style.display === "none" || chartPopup.style.display === ""
+      ? "block"
+      : "none";
+}
+
+function toggleHelpPopup() {
+  const helpPopup = document.getElementById("helpPopup");
+  const chartPopup = document.getElementById("chartPopup");
+
+  chartPopup.style.display = "none"
+
+  helpPopup.style.display =
+    helpPopup.style.display === "none" || helpPopup.style.display === ""
       ? "block"
       : "none";
 }

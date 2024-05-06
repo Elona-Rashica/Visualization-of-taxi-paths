@@ -59,7 +59,7 @@ input[type="file"] {
 #chartPopup {
   display: none;
   position: absolute;
-  top: 50%;
+  top: 55%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
@@ -73,6 +73,29 @@ input[type="file"] {
   position: relative;
 }
 #chartPopup button:last-child {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+#helpPopup {
+  display: none;
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 999; /* Ensure the popup is on top of other elements */
+  position: relative;
+
+}
+#helpPopup button:last-child {
   position: absolute;
   bottom: 10px;
   right: 10px;
