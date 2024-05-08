@@ -144,6 +144,8 @@ let myChart = new Chart("myChart", {
     },
   },
 });
+
+
 async function updateChart() {
   const fileInput = document.getElementById("csvFileInput");
   var startDate = document.getElementById("chartStartDate").value;
@@ -163,7 +165,7 @@ async function updateChart() {
     return;
   }
 
-  console.log(startDate + "" + endDate);
+
   console.log("clicked");
   var onlyStartDate = new Date(startDate);
   var onlyEndDate = new Date(endDate);
@@ -171,7 +173,7 @@ async function updateChart() {
     alert("Please select at least one CSV file.");
     return;
   }
-  taxiCounts.fill(0, 0, taxiCounts.length - 1);
+  taxiCounts.fill(0, 0, taxiCounts.length);
   await Promise.all(
     files.map(async (file, index) => {
       return new Promise(async (resolve) => {
@@ -189,9 +191,13 @@ async function updateChart() {
             return CSVdate >= onlyStartDate && CSVdate <= onlyEndDate;
           });
 
+
           let datesDifference = onlyEndDate.getTime() - onlyStartDate.getTime();
 
           let numOfDaysBetween = Math.floor(datesDifference / 86400000);
+
+          let rowFound = false;
+
           for (let i = 0; i < timesArray.length - 2; i++) {
             const formattedStartDate = new Date(
               startDate.concat(" " + timesArray[i])
@@ -201,14 +207,15 @@ async function updateChart() {
             );
 
 
-            let rowFound = false;
+            rowFound = false;
+            
 
 
             let k = 0;
             do {
               csvRows.forEach((row) => {
                 const dateCSV = new Date(row.DeviceDateTime);
-
+                rowFound = false;
                 if (
                   ((formattedStartDate.getHours() == dateCSV.getHours() &&
                     formattedStartDate.getMinutes() <= dateCSV.getMinutes() &&
@@ -219,15 +226,11 @@ async function updateChart() {
                   row.Di1 == 1
                 ) {
                   rowFound = true;
+                  taxiCounts[i]++;
                   return;
-                }
-                return rowFound;
+                };
               });
-              if (rowFound) {
-                taxiCounts[i]++;
-              }
-              rowFound = false;
-              //console.log("inside for loop" + formattedStartDate);
+
               formattedStartDate.setDate(formattedStartDate.getDate() + 1);
               nextFormattedDate.setDate(nextFormattedDate.getDate() + 1);
               k++;
@@ -242,6 +245,7 @@ async function updateChart() {
     })
   );
 
+  console.log(taxiCounts);
   console.log("Done");
 
   if (myChart) {
@@ -276,13 +280,18 @@ async function updateChart() {
 function toggleChartPopup() {
   const chartPopup = document.getElementById("chartPopup");
   const helpPopup = document.getElementById("helpPopup");
+  const map = document.getElementById("map");
 
   helpPopup.style.display = "none"
+
+  chartPopup.style.display === "none" || chartPopup.style.display === ""
+  ? map.setAttribute('class', 'blur')
+  : map.setAttribute('class', null);  
 
   chartPopup.style.display =
     chartPopup.style.display === "none" || chartPopup.style.display === ""
       ? "block"
-      : "none";
+      : "none";    
 }
 
 function toggleHelpPopup() {
@@ -290,6 +299,12 @@ function toggleHelpPopup() {
   const chartPopup = document.getElementById("chartPopup");
 
   chartPopup.style.display = "none"
+  const map = document.getElementById("map");
+
+  helpPopup.style.display === "none" || chartPopup.style.display === ""
+  ? map.setAttribute('class', 'blur')
+  : map.setAttribute('class', null);  
+
 
   helpPopup.style.display =
     helpPopup.style.display === "none" || helpPopup.style.display === ""
@@ -369,7 +384,7 @@ async function handleFile() {
           let latlngsDashed = [];
 
           csvRows.forEach(function (row) {
-            //console.log(row.DeviceDateTime);
+       
             latlngs.push([row.Latitude, row.Longitute]);
           });
 

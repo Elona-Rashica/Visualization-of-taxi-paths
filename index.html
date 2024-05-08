@@ -4,82 +4,160 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visualization of Taxi Paths in Online Maps</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.com/libraries/bootstrap-datetimepicker/4.17.37" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Alexandria:wght@100..900&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.com/libraries/bootstrap-datetimepicker/4.17.37"
+      integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+      integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="style/map.css" />
   </head>
   <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"> //per graph </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"
+    >
+      //per graph
+    </script>
     <div class="header">
       <label class="custom-file-upload">
-        <input type="file" id="csvFileInput" accept=".csv" multiple/>
+        <input type="file" id="csvFileInput" accept=".csv" multiple />
         Upload files
-    </label>
-    
-      <input id="startDate"  type="date" />
+      </label>
+
+      <input id="startDate" type="date" />
       <input id="endDate" type="date" />
       <input id="startTime" type="time" />
       <input id="endTime" type="time" />
-      <button id="uploadBttn" class="btn btn-secondary" onclick="handleFile()">Visuzalize</button> 
-      <button id="graphBttn"  class="btn btn-secondary" onclick="toggleChartPopup()">See graph</button> 
-      <button id="helpBttn"  class="btn btn-secondary" onclick="toggleHelpPopup()">Help</button> 
+      <button id="uploadBttn" class="btn btn-secondary" onclick="handleFile()">
+        Visuzalize
+      </button>
+      <button
+        id="graphBttn"
+        class="btn btn-secondary"
+        onclick="toggleChartPopup()"
+      >
+        See graph
+      </button>
+      <button
+        id="helpBttn"
+        class="btn btn-secondary"
+        onclick="toggleHelpPopup()"
+      >
+        Help
+      </button>
     </div>
-    <div id="map">
-      <div id="chartPopup">
-        <input id="chartStartDate" type="date" />
-        <input id="chartEndDate" type="date" />
-        <button id="refreshChart" class="btn btn-secondary btn-sm" onclick="updateChart()">See chart</button>
-        <canvas id="myChart" style="width:100%;max-width:100%;"></canvas>
-        <button class="btn btn-secondary btn-sm" onclick="toggleChartPopup()">Close Chart</button>
-      </div>
+    <div id="map"></div>
 
-      <div id="helpPopup">
-        <div>
-          <div style="position: relative; display: flex; justify-content: center; align-items: center;">
-            <img src="/img/universityLogo.png" style="position: absolute; top: 0; right: 0; width: 80px; height: 70px;" alt="">  
-            <h3>Help</h3>
-          </div>
-          <br>
-          <br>
-          <p>
-            Welcome to Visualization of Taxi Paths website. Main functionalities are 
-            visualizing taxi paths and generating a graph with the number of taxis for every 
-            15 minutes, for the selected dates.
-          </p>
-          <div style="display: flex; align-items: center;">
-            <p style="font-size: 11px;">
-              Elona Rashica <br>
-              <i>Visualization of Taxi Paths</i> <br>
-              University of Pristina, 2024<br>
-              Bachelor Thesis, Computer Engineering
-            </p>
-          </div>
-          <h5> Instructions for taxi paths visualization</h5>
-          <ol>
-            <li>Upload CSV files with taxi data</li>
-            <li>Select dates and times for which you want to filter data</li>
-            <li>Select 'Visualize'</li>
-          </ol>
-      
-          <h5>Instructions for the graph</h5>
-          <ol>
-            <li>Select 'See graph'</li>
-            <li>Select dates or leave the default dates</li>
-            <li>Select 'See graph'</li>
-          </ol>
+    <div id="chartPopup">
+      <input id="chartStartDate" type="date" />
+      <input id="chartEndDate" type="date" />
+      <button
+        id="refreshChart"
+        class="btn btn-secondary btn-sm"
+        onclick="updateChart()"
+      >
+        See chart
+      </button>
+      <button class="btn btn-secondary btn-sm chart-close-btn" onclick="toggleChartPopup()">
+        &#x00d7;
+      </button>
+      <canvas id="myChart" style="width: 100%; max-width: 100%"></canvas>
+
+    </div>
+
+    <div id="helpPopup">
+      <div>
+        <div
+          style="
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            vertical-align: center;
+            width: 100%;
+            height: 70px;
+          "
+        >
+          <img
+            src="/img/universityLogo.png"
+            style="
+              position: absolute;
+              top: 0;
+              right: 0;
+              width: 80px;
+              height: 70px;
+            "
+            alt=""
+          />
+          <h3 class="alexandria-header">Help</h3>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="toggleHelpPopup()">Close</button>
+
+        <br />
+        <p class="alexandria-header" style="font-size: small;">
+          Welcome to Visualization of Taxi Paths website. Main functionalities
+          are visualizing taxi paths and generating a graph with the number of
+          taxis for every 15 minutes, for the selected dates.
+        </p>
+
+        <div style="display: flex; align-items: center">
+          <p style="font-size: 11px">
+            Elona Rashica <br />
+            <i>Visualization of Taxi Paths</i> <br />
+            University of Pristina, 2024<br />
+            Bachelor Thesis, Computer Engineering
+          </p>
+        </div>
+
+        <h5 class="alexandria-header">
+          Instructions for taxi paths visualization
+        </h5>
+        <ol class="alexandria-header" style="font-size: small;">
+          <li>Upload CSV files with taxi data</li>
+          <li>Select dates and times for which you want to filter data</li>
+          <li>Select 'Visualize'</li>
+        </ol>
+
+        <h5 class="alexandria-header">Instructions for the graph</h5>
+        <ol class="alexandria-header" style="font-size: small;">
+          <li>Select 'See graph'</li>
+          <li>Select dates or leave the default dates</li>
+          <li>Select 'See graph'</li>
+        </ol>
       </div>
-      
-      
 
+      <button class="btn btn-secondary btn-sm" onclick="toggleHelpPopup()">
+        Close
+      </button>
+    </div>
 
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js">// per parse </script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"
+    >
+      // per parse
+    </script>
     <script src="js/mapTest.js"></script>
-
   </body>
 </html>
