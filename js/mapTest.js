@@ -188,17 +188,20 @@ async function updateChart() {
           //first filter only selected dates
           const csvRows = results.data.filter((row) => {
             var CSVdate = new Date(row.DeviceDateTime);
-            return CSVdate >= onlyStartDate && CSVdate <= onlyEndDate;
+            return CSVdate >= onlyStartDate && CSVdate <= onlyEndDate && CSVdate.getHours() > 5 && CSVdate.getHours() < 18;
           });
 
 
           let datesDifference = onlyEndDate.getTime() - onlyStartDate.getTime();
 
-          let numOfDaysBetween = Math.floor(datesDifference / 86400000);
+          let numOfDaysBetween = datesDifference == 0 ? 0 : Math.floor(datesDifference / 86400000);
 
           let rowFound = false;
 
-          for (let i = 0; i < timesArray.length - 2; i++) {
+          for (let i = 0; i < timesArray.length - 1; i++) {
+
+            let k = 0;
+
             const formattedStartDate = new Date(
               startDate.concat(" " + timesArray[i])
             );
@@ -206,33 +209,35 @@ async function updateChart() {
               startDate.concat(" " + timesArray[i + 1])
             );
 
-
             rowFound = false;
+            //console.log(numOfDaysBetween);
             
-
-
-            let k = 0;
             do {
+              
+              rowFound = false;
               csvRows.forEach((row) => {
                 const dateCSV = new Date(row.DeviceDateTime);
-                rowFound = false;
+
+                //console.log(formattedStartDate);
+                //rowFound = false;
+                formattedStartDate.setDate(formattedStartDate.getDate() + k);
+                nextFormattedDate.setDate(nextFormattedDate.getDate() + k);
                 if (
-                  ((formattedStartDate.getHours() == dateCSV.getHours() &&
+                  !rowFound &&
+                  row.Speed > 0 &&
+                  row.Di1 == 1 && 
+                  formattedStartDate.getHours() == dateCSV.getHours() &&
+                  ((
                     formattedStartDate.getMinutes() <= dateCSV.getMinutes() &&
                     nextFormattedDate.getMinutes() > dateCSV.getMinutes()) ||
-                    (dateCSV.getMinutes() > 45 &&
-                      formattedStartDate.getHours() == dateCSV.getHours())) &&
-                  row.Speed > 0 &&
-                  row.Di1 == 1
+                    (dateCSV.getMinutes() >= 45 &&
+                    formattedStartDate.getMinutes() == 45))
                 ) {
                   rowFound = true;
                   taxiCounts[i]++;
-                  return;
-                };
+                  //return;
+                } else rowFound = false;
               });
-
-              formattedStartDate.setDate(formattedStartDate.getDate() + 1);
-              nextFormattedDate.setDate(nextFormattedDate.getDate() + 1);
               k++;
             } while (k <= numOfDaysBetween);
           }
