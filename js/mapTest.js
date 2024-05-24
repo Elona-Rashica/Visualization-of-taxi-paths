@@ -127,7 +127,7 @@ let myChart = new Chart("myChart", {
     labels: timesArray,
     datasets: [
       {
-        label: "Rush hours",
+        label: "Number of taxis",
         data: taxiCounts,
         backgroundColor: "rgba(255,99,132, 0.2)",
         borderColor: "rgb(255, 99, 132)",
@@ -252,6 +252,7 @@ async function updateChart() {
 
   console.log(taxiCounts);
   console.log("Done");
+  const modifiedTaxiCounts = taxiCounts.map(count => Math.ceil(count / 90));
 
   if (myChart) {
     myChart.destroy();
@@ -263,8 +264,8 @@ async function updateChart() {
       labels: timesArray,
       datasets: [
         {
-          label: "Rush hours",
-          data: taxiCounts,
+          label: "Number of taxis",
+          data: modifiedTaxiCounts,
           backgroundColor: "rgba(255,99,132, 0.2)",
           borderColor: "rgb(255, 99, 132)",
           borderWidth: 1,
