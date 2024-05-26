@@ -209,17 +209,11 @@ async function updateChart() {
               startDate.concat(" " + timesArray[i + 1])
             );
 
-            rowFound = false;
-            //console.log(numOfDaysBetween);
-            
+            rowFound = false;            
             do {
-              
               rowFound = false;
               csvRows.forEach((row) => {
                 const dateCSV = new Date(row.DeviceDateTime);
-
-                //console.log(formattedStartDate);
-                //rowFound = false;
                 formattedStartDate.setDate(formattedStartDate.getDate() + k);
                 nextFormattedDate.setDate(nextFormattedDate.getDate() + k);
                 if (
@@ -235,7 +229,6 @@ async function updateChart() {
                 ) {
                   rowFound = true;
                   taxiCounts[i]++;
-                  //return;
                 } else rowFound = false;
               });
               k++;
@@ -361,9 +354,6 @@ async function handleFile() {
               header: true, // If the CSV has a header row
             });
           });
-
-          //kqyr mi filtru edhe ne baze te di3 krejt rreshtat ni ven edhe krejt rershtat me !di3 ni ven tjeter qe mi shti krejt me ni array tani veq me i bo ne latlngs e me dal mire
-           
 
           //Filter csv rows based on date & time
           const csvRows = results.data.filter((row) => {
